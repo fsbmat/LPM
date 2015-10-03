@@ -1,38 +1,86 @@
 #Binomial simulation
 
-binomCase2=function(os.flag,us.flag,case,binary.flag)
+binomCase2=function(os.flag,us.flag,case,binary.flag,error.dist)
 {
   n=2e6  #6
+  #
+  if(error.dist==1)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=rnorm(n,0,1)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=rnorm(500,0,1))  #runif(500,-2,2)
+    
+  }
+  if(error.dist==2)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=rlogis(n,0,sqrt(3)/pi)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=rlogis(500,0,sqrt(3)/pi))  #runif(500,-2,2)
+  }
+  if(error.dist==3)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=runif(n,-2,2)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=runif(500,-2,2))  #runif(500,-2,2)
+    
+  }
+    
   if(case==1)
   {
-    b0=.5
+    b0=0.5
     b1=1
-    b2=.01
-    set.seed(1)
-    large.data=data.frame(eps=rnorm(n,mean=0,sd=.01))
-    set.seed(2)
-    hold.data=data.frame(eps=rnorm(500,mean=0,sd=.01))
+    b2=-1
+    #
+    set.seed(3)
+    large.data$X=rnorm(n,0,1.5)
+    set.seed(4)
+    hold.data$X=rnorm(500,0,1.5)
+    #
+    set.seed(4)
+    large.data$X1=rnorm(n,0,1.5)
+    set.seed(3)
+    hold.data$X1=rnorm(500,0,1.5)
+    
+#     set.seed(1)
+#     large.data=data.frame(eps=rnorm(n,mean=0,sd=1))
+#     set.seed(2)
+#     hold.data=data.frame(eps=rnorm(500,mean=0,sd=1))
   }else
   {
     b0=0.5
-    b1=0.1
-    b2=0.45
-    set.seed(1)
-    large.data=data.frame(eps=rnorm(n,mean=0,sd=.1))
-    set.seed(2)
-    hold.data=data.frame(eps=rnorm(500,mean=0,sd=.1))
+    b1=1
+    b2=-1
+    #
+    set.seed(3)
+    large.data$X=rnorm(n,0,.5)
+    set.seed(4)
+    hold.data$X=rnorm(500,0,.5)
+    #
+    set.seed(4)
+    large.data$X1=rnorm(n,0,.5)
+    set.seed(3)
+    hold.data$X1=rnorm(500,0,.5)
+    
+#     set.seed(1)
+#     large.data=data.frame(eps=rnorm(n,mean=0,sd=1))
+#     set.seed(2)
+#     hold.data=data.frame(eps=rnorm(500,mean=0,sd=1))
   }
-  #
-  set.seed(3)
-  large.data$X=runif(n,-.5,.5)
-  set.seed(4)
-  hold.data$X=runif(500,-.5,.5)
-  #
-  set.seed(4)
-  large.data$X1=runif(n,-.5,.5)
-  set.seed(3)
-  hold.data$X1=runif(500,-.5,.5)
-  #
+  
+#   #
+#   set.seed(3)
+#   large.data$X=runif(n,-.5,.5)
+#   set.seed(4)
+#   hold.data$X=runif(500,-.5,.5)
+#   #
+#   set.seed(4)
+#   large.data$X1=runif(n,-.5,.5)
+#   set.seed(3)
+#   hold.data$X1=runif(500,-.5,.5)
+#   #
   if(os.flag)
   {
     b1=0
@@ -59,7 +107,7 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
     dim(hold.data)
   }else
   {
-    large.data$Y.binary=with(large.data,ifelse(Y>=median(Y),1,0))
+    large.data$Y.binary=with(large.data,ifelse(Y>= median(Y),1,0)) #median(Y)
     large.data=na.omit(large.data)
     dim(large.data)
     hold.data$Y.binary=with(hold.data,ifelse(Y>=median(Y),1,0))
@@ -82,13 +130,26 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
   m2=as.formula(Y.binary~X)
   # m3=as.formula(Y.binary~X-1)
   
+#   test.ols=lm(m1,large.data)
+#   test.lpm=lm(m2,large.data)
+#   m=model.matrix(test.lpm)
+#   bias= solve(t(m)%*%m)%*%t(m)%*%rep(1.5,dim(large.data)[1])
+#     # b1=(m%*%c(0.5,1)+rep(1.5,dim(large.data)[1]))/4
+#     # solve(t(m)%*%m)%*%t(m)%*%b1
+#     (coef(test.ols)+bias)/4
+#   
+#   ## Normal errors
+#   .798*sd(large.data$Y.binary)/sd(large.data$Y)
+#   ### Logistic 
+#   .7624619*sd(large.data$Y.binary)/sd(large.data$Y)
+  ##
   #Linear Reg
   quad.reg1=function(plot.data,hold.data,title,label,case,data.ind)
   {
     if(missing(title)) title=""
     if(missing(label)) label=""
-    xl=c(-.5,-.5,.5,.5)     #median(large.data$X)
-    yl=c(.85,.65,.15,.15)
+    xl=c(.25,.25,.75,.75)     #median(large.data$X)
+    yl=c(1.25,1,.75,.75)
     
     #LPM-1
     my.axes=T
@@ -112,7 +173,7 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
       x.roc.lim=c(0,1)
     }
     #
-    plot(plot.data$X,plot.data$Y,xlab="LPM",ylab="",main="",type="n",cex.axis=0.5,ylim=c(0,1),xlim=c(-1,1), axes = my.axes,xaxt=x.lab,yaxt=y.lab)
+    plot(plot.data$X,plot.data$Y,xlab="LPM",ylab="",main="",type="n",cex.axis=0.5,ylim=c(0.5,1.5),xlim=c(0,1), axes = my.axes,xaxt=x.lab,yaxt=y.lab)
     lpm.model=lm(m2,data=plot.data)
     coef1=lpm.model$coefficients
     #####
@@ -133,8 +194,37 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
     
     #####
     sd1=round(summary(lm(m2,data=plot.data))$coefficients[,2],3)
-    abline(coef1,col="black",lty=4)
+    abline(coef1,col="black",lty=5)
     my.plot.equation(coef1,sd1,"b.ols",xl[1],yl[1],"black")
+    
+    
+    ### bias correction
+    if(error.dist==1)
+    {
+      ## Normal errors
+      bias=.798*sd(large.data$Y.binary)/sd(large.data$Y)
+      coef3=coef1
+      coef3[2:length(coef3)]=coef1[2:length(coef3)]/bias
+    }
+    if(error.dist==2)
+    {
+      ## Logistic 
+      bias=.762*sd(large.data$Y.binary)/sd(large.data$Y)
+      coef3=coef1
+      coef3[2:length(coef3)]=coef1[2:length(coef3)]/bias
+    }
+    if(error.dist==3)
+    {
+      m=model.matrix(lpm.model)
+      bias= solve(t(m)%*%m)%*%t(m)%*%rep(1.5,dim(large.data)[1])
+      coef3= 4*coef1-bias
+        
+    }
+    
+    #####
+        abline(coef3,lty=3)
+        my.plot.equation(coef3,sd1,"b.cor",xl[2],yl[2],"black")  
+    #   
     
     #WOLS
     t=lm(m2,data=plot.data)$fitted
@@ -152,30 +242,35 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
     ##
     dev.set(dev.next())
     require(ROCR)
-    roc.legend=function(conf,lab)
+    roc.legend=function(auc,lab)
     { 
       #     if(sum(dim(conf)==c(2,2))==0)
       #     {
       #       return(paste("$",lab,"(",round(100*sum(conf[1,1]+conf[2,2])/sum(conf),2),"\\%)$",sep=""))
       #     }else
       #       return(paste("$",lab,"(",round(100*conf[1,1]/sum(conf),2),"\\%)$",sep=""))
-      return(paste("$",lab,"$"))
+      return(paste("$",lab,"=",round(auc,2),"$"))
     }    
-    lpm.roc=roc.legend(xtabs(~lpm.pred1+hold.data$Y.binary),"LPM")
-    #   lpm.lab=paste("LPM(",round(100*sum(lpm.conf[1,1]+lpm.conf[2,2])/sum(lpm.conf),2),"%)",sep="")
+#     lpm.roc=roc.legend(xtabs(~lpm.pred1+hold.data$Y.binary),"LPM")
+#     #   lpm.lab=paste("LPM(",round(100*sum(lpm.conf[1,1]+lpm.conf[2,2])/sum(lpm.conf),2),"%)",sep="")
     plot(performance(prediction(lpm.pred,hold.data$Y.binary),"tpr","fpr"),col="black",xaxis.at=x.roc.lim,yaxis.at=y.roc.lim,xaxis.cex.axis=0.5,yaxis.cex.axis=0.5)
+    lpm.auc=as.numeric(performance(prediction(lpm.pred,hold.data$Y.binary),"auc")@y.values)
     plot(performance(prediction(logit.pred,hold.data$Y.binary),"tpr","fpr"),col="red",add=T,lty=2)
+    logit.auc=as.numeric(performance(prediction(logit.pred,hold.data$Y.binary),"auc")@y.values)
     plot(performance(prediction(probit.pred,hold.data$Y.binary),"tpr","fpr"),col="brown",add=T,lty=3,xaxt=x.lab)
-    plot(performance(prediction(lpm.pred,hold.data$Y.binary),"tpr","fpr"),col="darkgreen",add=T,lty=4,xaxt=x.lab)
+    probit.auc=as.numeric(performance(prediction(probit.pred,hold.data$Y.binary),"auc")@y.values)
+    plot(performance(prediction(lpm.pred.wls,hold.data$Y.binary),"tpr","fpr"),col="darkgreen",add=T,lty=4,xaxt=x.lab)
+    wls.auc=as.numeric(performance(prediction(lpm.pred.wls,hold.data$Y.binary),"auc")@y.values)
     
-    logit.roc=roc.legend(xtabs(~logit.pred1+hold.data$Y.binary),"Logit")
-    probit.roc=roc.legend(xtabs(~probit.pred1+hold.data$Y.binary),"Probit")
-    wls.roc=roc.legend(xtabs(~lpm.pred.wls1+hold.data$Y.binary),"WLS")
+    lpm.roc=roc.legend(lpm.auc,"LPM")
+    logit.roc=roc.legend(logit.auc,"Logit")
+    probit.roc=roc.legend(probit.auc,"Probit")
+    wls.roc=roc.legend(wls.auc,"WLS")
     legend.fill=c("black","red","brown","darkgreen")
-    legend(.6,.4,c(lpm.roc,logit.roc,probit.roc,wls.roc),fill=legend.fill,col=legend.fill,cex=0.4)
+    legend(.6,.6,c(lpm.roc,logit.roc,probit.roc,wls.roc),fill=legend.fill,
+           col=legend.fill,cex=0.5,title="AUC")
     
-    
-    ##
+        ##
     dev.set(dev.next())
     if(data.ind==3)
     {
@@ -202,8 +297,9 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
     dev.set(dev.prev())
     
     #####
-    abline(coef2,col="red",lty=3)
-    my.plot.equation(coef2,sd2,"b.wls",xl[2],yl[2],"red")  
+#     abline(coef2,col="red",lty=3)
+#     my.plot.equation(coef2,sd2,"b.wls",xl[2],yl[2],"red")  
+#   
     
     #   #Zero-Intercept
     #   coef3=lm(m3,data=plot.data)$coefficients
@@ -214,8 +310,8 @@ binomCase2=function(os.flag,us.flag,case,binary.flag)
     # OLS
     coef4=lm(m1,data=plot.data)$coefficients
     sd4=round(summary(lm(m1,data=plot.data))$coefficients[,2],3)
-    abline(coef4,col="darkgreen")
-    my.plot.equation(coef4,sd4,"ols",xl[4],yl[4],"darkgreen")
+    abline(coef4,col="gray")
+    my.plot.equation(coef4,sd4,"ols",xl[4],yl[4],"black")
   }
   #   creating plot for each datasets
   quad.reg1(plot.data=tiny.data,hold.data,case=case,data.ind=1)
@@ -246,41 +342,101 @@ my.plot.equation=function(coef,sd,labtex,x,y,col)
 
 
 
-binomCase3=function(os.flag,us.flag,case,binary.flag)
+binomCase3=function(os.flag,us.flag,case,binary.flag,error.dist)
 {
   n=2e6  #6
+  #
+  if(error.dist==1)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=rnorm(n,0,1)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=rnorm(500,0,1))  #runif(500,-2,2)
+    
+  }
+  if(error.dist==2)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=rlogis(n,0,sqrt(3)/pi)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=rlogis(500,0,sqrt(3)/pi))  #runif(500,-2,2)
+  }
+  if(error.dist==3)
+  {
+    set.seed(1)
+    large.data=data.frame(eps=runif(n,-2,2)) #runif(n,-2,2)
+    set.seed(2)
+    hold.data=data.frame(eps=runif(500,-2,2))  #runif(500,-2,2)
+    
+  }
+  
   if(case==1)
   {
-    b0=.5
+    b0=0.5
     b1=1
-    b2=.01
-    set.seed(1)
-    large.data=data.frame(eps=rnorm(n,mean=0,sd=.01))
-    set.seed(2)
-    hold.data=data.frame(eps=rnorm(500,mean=0,sd=.01))
+    b2=-1
+    #
+    set.seed(3)
+    large.data$X=rnorm(n,0,1.5)
+    set.seed(4)
+    hold.data$X=rnorm(500,0,1.5)
+    #
+    set.seed(4)
+    large.data$X1=rnorm(n,0,1.5)
+    set.seed(3)
+    hold.data$X1=rnorm(500,0,1.5)
+    
+    #     set.seed(1)
+    #     large.data=data.frame(eps=rnorm(n,mean=0,sd=1))
+    #     set.seed(2)
+    #     hold.data=data.frame(eps=rnorm(500,mean=0,sd=1))
   }else
   {
     b0=0.5
-    b1=0.1
-    b2=0.45
-    set.seed(1)
-    large.data=data.frame(eps=rnorm(n,mean=0,sd=.1))
-    set.seed(2)
-    hold.data=data.frame(eps=rnorm(500,mean=0,sd=.1))
+    b1=1
+    b2=-1
+    #
+    set.seed(3)
+    large.data$X=rnorm(n,0,.5)
+    set.seed(4)
+    hold.data$X=rnorm(500,0,.5)
+    #
+    set.seed(4)
+    large.data$X1=rnorm(n,0,.5)
+    set.seed(3)
+    hold.data$X1=rnorm(500,0,.5)
+    
+    #     set.seed(1)
+    #     large.data=data.frame(eps=rnorm(n,mean=0,sd=1))
+    #     set.seed(2)
+    #     hold.data=data.frame(eps=rnorm(500,mean=0,sd=1))
   }
-  #
-  set.seed(3)
-  large.data$X=runif(n,-.5,.5)
-  set.seed(4)
-  hold.data$X=runif(500,-.5,.5)
-  #
-  set.seed(4)
-  large.data$X1=runif(n,-.5,.5)
-  set.seed(3)
-  hold.data$X1=runif(500,-.5,.5)
-  #
-  large.data$Y=with(large.data,b0+b1*X+eps)  #+b2*X1
-  hold.data$Y=with(hold.data,b0+b1*X+eps)    #+b2*X1
+  
+  #   #
+  #   set.seed(3)
+  #   large.data$X=runif(n,-.5,.5)
+  #   set.seed(4)
+  #   hold.data$X=runif(500,-.5,.5)
+  #   #
+  #   set.seed(4)
+  #   large.data$X1=runif(n,-.5,.5)
+  #   set.seed(3)
+  #   hold.data$X1=runif(500,-.5,.5)
+  #   #
+  if(os.flag)
+  {
+    b1=0
+    large.data$Y=with(large.data,b0+b1*X+eps)  #+b2*X1
+    hold.data$Y=with(hold.data,b0+b1*X+eps)    #+b2*X1
+  }else if(us.flag)
+  {
+    large.data$Y=with(large.data,b0+b1*X+b2*X1+eps)  #+b2*X1
+    hold.data$Y=with(hold.data,b0+b1*X+b2*X1+eps)    #+b2*X1
+  }else
+  {
+    large.data$Y=with(large.data,b0+b1*X+eps)  #+b2*X1
+    hold.data$Y=with(hold.data,b0+b1*X+eps)    #+b2*X1
+  }
   
   #
   if(binary.flag)
@@ -293,7 +449,7 @@ binomCase3=function(os.flag,us.flag,case,binary.flag)
     dim(hold.data)
   }else
   {
-    large.data$Y.binary=with(large.data,ifelse(Y>=median(Y),1,0))
+    large.data$Y.binary=with(large.data,ifelse(Y>= median(Y),1,0)) #median(Y)
     large.data=na.omit(large.data)
     dim(large.data)
     hold.data$Y.binary=with(hold.data,ifelse(Y>=median(Y),1,0))
@@ -314,6 +470,20 @@ binomCase3=function(os.flag,us.flag,case,binary.flag)
   
   m1=as.formula(Y~X+X1)
   m2=as.formula(Y.binary~X+X1)
+  # m3=as.formula(Y.binary~X-1)
+  
+  #   test.ols=lm(m1,large.data)
+  #   test.lpm=lm(m2,large.data)
+  #   m=model.matrix(test.lpm)
+  #   bias= solve(t(m)%*%m)%*%t(m)%*%rep(1.5,dim(large.data)[1])
+  #     # b1=(m%*%c(0.5,1)+rep(1.5,dim(large.data)[1]))/4
+  #     # solve(t(m)%*%m)%*%t(m)%*%b1
+  #     (coef(test.ols)+bias)/4
+  #   
+  #   ## Normal errors
+  #   .798*sd(large.data$Y.binary)/sd(large.data$Y)
+  #   ### Logistic 
+  #   .7624619*sd(large.data$Y.binary)/sd(large.data$Y)
   
   quad.reg2=function(plot.data,hold.data,title,label,case,data.ind)
   {
@@ -368,16 +538,39 @@ binomCase3=function(os.flag,us.flag,case,binary.flag)
       segments(x-epsilon,coef+sd,x+epsilon,coef+sd,col=colour)
     }
     my.errorbar(x,coef1,sd1,"black",4)
-    my.plot.equation(coef1,sd1,"b.ols",xl[1],yl[1],alpha("black",0.1))
+    # my.plot.equation(coef1,sd1,"b.ols",xl[1],yl[1],alpha("black",0.1))
+    ### bias correction
+    if(error.dist==1)
+    {
+      ## Normal errors
+      bias=.798*sd(large.data$Y.binary)/sd(large.data$Y)
+      coef3=coef1
+      coef3[2:length(coef3)]=coef1[2:length(coef3)]/bias
+    }
+    if(error.dist==2)
+    {
+      ## Logistic 
+      bias=.762*sd(large.data$Y.binary)/sd(large.data$Y)
+      coef3=coef1
+      coef3[2:length(coef3)]=coef1[2:length(coef3)]/bias
+    }
+    if(error.dist==3)
+    {
+      m=model.matrix(lpm.model)
+      bias= solve(t(m)%*%m)%*%t(m)%*%rep(1.5,dim(large.data)[1])
+      coef3= 4*coef1-bias
+      
+    }
     
+    my.errorbar(x+0.1,coef3,sd1,"black",4)
     #WOLS
     t=lm(m2,data=plot.data)$fitted
     plot.data$weight.lpm=1/sqrt(t*(1-t))
     
     coef2=lm(m2,data=plot.data,weights=weight.lpm)$coefficients
     sd2=summary(lm(m2,data=plot.data,weights=weight.lpm))$coefficients[,2]
-    my.errorbar(x+0.1,coef2,sd2,"red",3)
-    my.plot.equation(coef2,sd2,"b.wls",xl[2],yl[2],alpha("red",0.1))  
+    # my.errorbar(x+0.1,coef2,sd2,"black",3)
+    # my.plot.equation(coef2,sd2,"b.wls",xl[2],yl[2],alpha("red",0.1))  
     #####
     lpm.pred.wls=predict(lm(m2,data=plot.data,weights=weight.lpm),hold.data)
     ##
@@ -389,28 +582,33 @@ binomCase3=function(os.flag,us.flag,case,binary.flag)
     ##
     dev.set(dev.next())
     require(ROCR)
-    roc.legend=function(conf,lab)
+    roc.legend=function(auc,lab)
     { 
       #     if(sum(dim(conf)==c(2,2))==0)
       #     {
       #       return(paste("$",lab,"(",round(100*sum(conf[1,1]+conf[2,2])/sum(conf),2),"\\%)$",sep=""))
       #     }else
       #       return(paste("$",lab,"(",round(100*conf[1,1]/sum(conf),2),"\\%)$",sep=""))
-      return(paste("$",lab,"$"))
-    }
-    
-    lpm.roc=roc.legend(xtabs(~lpm.pred1+hold.data$Y.binary),"LPM")
-    #   lpm.lab=paste("LPM(",round(100*sum(lpm.conf[1,1]+lpm.conf[2,2])/sum(lpm.conf),2),"%)",sep="")
+      return(paste("$",lab,"=",round(auc,2),"$"))
+    }    
+    #     lpm.roc=roc.legend(xtabs(~lpm.pred1+hold.data$Y.binary),"LPM")
+    #     #   lpm.lab=paste("LPM(",round(100*sum(lpm.conf[1,1]+lpm.conf[2,2])/sum(lpm.conf),2),"%)",sep="")
     plot(performance(prediction(lpm.pred,hold.data$Y.binary),"tpr","fpr"),col="black",xaxis.at=x.roc.lim,yaxis.at=y.roc.lim,xaxis.cex.axis=0.5,yaxis.cex.axis=0.5)
+    lpm.auc=as.numeric(performance(prediction(lpm.pred,hold.data$Y.binary),"auc")@y.values)
     plot(performance(prediction(logit.pred,hold.data$Y.binary),"tpr","fpr"),col="red",add=T,lty=2)
+    logit.auc=as.numeric(performance(prediction(logit.pred,hold.data$Y.binary),"auc")@y.values)
     plot(performance(prediction(probit.pred,hold.data$Y.binary),"tpr","fpr"),col="brown",add=T,lty=3,xaxt=x.lab)
-    plot(performance(prediction(lpm.pred,hold.data$Y.binary),"tpr","fpr"),col="darkgreen",add=T,lty=4,xaxt=x.lab)
+    probit.auc=as.numeric(performance(prediction(probit.pred,hold.data$Y.binary),"auc")@y.values)
+    plot(performance(prediction(lpm.pred.wls,hold.data$Y.binary),"tpr","fpr"),col="darkgreen",add=T,lty=4,xaxt=x.lab)
+    wls.auc=as.numeric(performance(prediction(lpm.pred.wls,hold.data$Y.binary),"auc")@y.values)
     
-    logit.roc=roc.legend(xtabs(~logit.pred1+hold.data$Y.binary),"Logit")
-    probit.roc=roc.legend(xtabs(~probit.pred1+hold.data$Y.binary),"Probit")
-    wls.roc=roc.legend(xtabs(~lpm.pred.wls1+hold.data$Y.binary),"WLS")
+    lpm.roc=roc.legend(lpm.auc,"LPM")
+    logit.roc=roc.legend(logit.auc,"Logit")
+    probit.roc=roc.legend(probit.auc,"Probit")
+    wls.roc=roc.legend(wls.auc,"WLS")
     legend.fill=c("black","red","brown","darkgreen")
-    legend(.6,.4,c(lpm.roc,logit.roc,probit.roc,wls.roc),fill=legend.fill,col=legend.fill,cex=0.4)
+    legend(.6,.6,c(lpm.roc,logit.roc,probit.roc,wls.roc),fill=legend.fill,
+           col=legend.fill,cex=0.5,title="AUC")
     
     
     ##
@@ -452,8 +650,8 @@ binomCase3=function(os.flag,us.flag,case,binary.flag)
     ols.model=lm(m1,data=plot.data)
     coef4=lm(m1,data=plot.data)$coefficients
     sd4=summary(lm(m1,data=plot.data))$coefficients[,2]
-    my.errorbar(x-0.1,coef4,sd4,"darkgreen",1)
-    my.plot.equation(coef4,sd4,"ols",xl[4],yl[4],alpha("darkgreen",0.1))
+    my.errorbar(x-0.1,coef4,sd4,"black",1)
+    # my.plot.equation(coef4,sd4,"ols",xl[4],yl[4],alpha("darkgreen",0.1))
   }
   
   #   creating plot for each datasets
