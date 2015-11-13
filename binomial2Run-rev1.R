@@ -1,16 +1,21 @@
 setwd("~/Suneel/Prof.Galit/LPM/PaperResults/Revision1")
 #binomial 2 run
 remove(list=ls())
+options(scipen = 999)
 source('~/Suneel/Prof.Galit/LPM/PaperResults/Revision1/binomial2-rev1.R')
 
 ###input
-pdf1="LPMvsOLS_new.tex"
-pdf2="LPMvsOLS_Median_roc.tex"
-pdf3="LPMvsOLS_Median_Pred.tex"
+pdf1="LPMvsOLS_new_U.tex"  #LPMvsOLS_new_L
+pdf2="LPMvsOLS_Median_roc_U.tex" #LPMvsOLS_Median_roc_L
+pdf3="LPMvsOLS_Median_Pred_U.tex" #LPMvsOLS_Median_Pred_L
 #
-main.lab=paste("$y_{b}= I(\\beta_0+\\beta_1x+\\epsilon \\textgreater M_y )$")
+main.lab=paste("$y_{b}= I(y \\textgreater M_y )$")
 data.lab=paste("$ n=2M \\hspace{1.5cm} n=500 \\hspace{1.5cm} n=50$")
-parm.lab=paste("$  \\beta_0=0.5,\\beta_1=1, x \\sim N(0,1.5^2) \\hspace{2cm} \\beta_0=0,\\beta_1=1, x \\sim N(0,0.5^2)$")
+parm.lab=paste("$ \\beta_0=0.5,\\beta_1=1, \\sigma_y=0.1 \\hspace{2cm} \\beta_0=0.5,\\beta_1=0.1 ,\\sigma_y=1)$")
+
+#Logis(0,\\sqrt{3}/\\pi)
+# N(0,1)
+# U(-\\sqrt(12)/2,\\sqrt(12)/2)
 #
 #         par(mfcol = c(3, 2),
 #            cex=0.6,
@@ -55,16 +60,17 @@ dev.set(dev.prev())
 dev.set(dev.prev())
 
 #case1 with b0=.5,b1=1,eps=.01
-binomCase3(F,F,1,F,1)
+binomCase2(F,F,1,F,3)
 #case2 with b0=.5,b1=.1,eps=.1
-binomCase3(F,F,2,F,1)
+binomCase2(F,F,2,F,3)
 # labelling
 mtext(main.lab, side = 3, outer = TRUE, cex = 0.6, line = 2)
 mtext(data.lab, side = 2, outer = TRUE, cex = 0.5, line =1.2)
-mtext("$\\epsilon \\sim N(0,1)$", side = 1, outer = TRUE, line = 2.2,cex=0.6)
+mtext("$ x \\sim N(0,1),  y|x \\sim U(\\beta_0+\\beta_1x-\\sqrt{3}\\sigma_y,\\beta_0+\\beta_1x+\\sqrt{3}\\sigma_y) $", side = 1, outer = TRUE, line = 2.2,cex=0.6)
 mtext("$y$", side = 2,las=2, outer = TRUE, line = 2.2,cex=0.6)
 mtext(parm.lab, side = 3, outer = TRUE, line = 0.5,cex=0.5)
 dev.off()
+
 
 # mtext(main.lab, side = 3, outer = TRUE, cex = 0.6, line = 2)
 mtext(data.lab, side = 2, outer = TRUE, cex = 0.5, line =1.2)
@@ -191,6 +197,102 @@ tools::texi2pdf("LPM-Simulation-Over-Spec-Binomial-roc1.tex")
 tools::texi2pdf("LPM-Simulation-Over-Spec-Binomial-predhold1.tex")
 
 
+###########################################################
+###################################################
+
+setwd("~/Suneel/Prof.Galit/LPM/PaperResults/Revision1")
+#binomial 2 run
+remove(list=ls())
+options(scipen = 999)
+source('~/Suneel/Prof.Galit/LPM/PaperResults/Revision1/binomial2-rev1.R')
+
+###input
+pdf1="LPMCorvsOLS_new_N_U.tex"  #LPMvsOLS_new_L
+# pdf2="LPMvsOLS_Median_roc_U.tex" #LPMvsOLS_Median_roc_L
+# pdf3="LPMvsOLS_Median_Pred_U.tex" #LPMvsOLS_Median_Pred_L
+#
+main.lab=paste("$y_{b}= I(\\beta_0+\\beta_1x+\\epsilon \\textgreater 0.5 )$")
+data.lab=paste("$ n=2M \\hspace{1.5cm} n=500 \\hspace{1.5cm} n=50$")
+parm.lab=paste("$ \\beta_0=0.5,\\beta_1=1, \\epsilon \\sim N(0,0.1^2) \\hspace{2cm} \\beta_0=0.5,\\beta_1=0.1 ,\\epsilon \\sim N(0,1) $")
+
+#Logis(0,\\sqrt{3}/\\pi)
+# N(0,1)
+# U(-\\sqrt(12)/2,\\sqrt(12)/2)
+#
+#         par(mfcol = c(3, 2),
+#            cex=0.6,
+#            mar = c(0, 0, 0, 0), 
+#            oma = c(4, 4, 4, 4)+0.5,
+#            tcl = -0.25,
+#            mgp = c(2, 0.6, 0))
+########
+require(tikzDevice)
+require(grid)
+graphics.off()
+tikz(pdf1,standAlone = TRUE, width = 4,height = 2.5,packages=c(options()$tikzLatexPackages, "\\usepackage{amsfonts,amsmath,textcomp}"))
+par(mfcol = c(3, 2),
+    cex=0.6,
+    mar = c(0, 0, 0, 0), 
+    oma = c(4, 4, 4, 4)+0.5,
+    tcl = -0.25,
+    mgp = c(2, 0.6, 0))
+# x11()
+# device for ROC
+# tikz(pdf2,standAlone = TRUE, width = 4,height = 2.5,packages=c(options()$tikzLatexPackages, "\\usepackage{amsfonts,amsmath,textcomp}"))
+# par(mfcol = c(3, 2),
+#     cex=0.6,
+#     mar = c(0, 0, 0, 0), 
+#     oma = c(4, 4, 4, 4)+0.5,
+#     tcl = -0.25,
+#     mgp = c(2, 0.6, 0))
+# # x11()
+# # device for pred box
+# tikz(pdf3,standAlone = TRUE, width = 4,height = 2.5,packages=c(options()$tikzLatexPackages, "\\usepackage{amsfonts,amsmath,textcomp}"))
+# par(mfcol = c(3, 2),
+#     cex=0.6,
+#     mar = c(0, 0, 0, 0), 
+#     oma = c(4, 4, 4, 4)+0.5,
+#     tcl = -0.25,
+#     mgp = c(2, 0.6, 0))
+# # x11()
+# 
+# #
+# dev.list()
+# dev.set(dev.prev())
+# dev.set(dev.prev())
+
+#case1 with b0=.5,b1=1,eps=.01
+compare(1,1)
+#case2 with b0=.5,b1=.1,eps=.1
+compare(2,1)
+# labelling
+mtext(main.lab, side = 3, outer = TRUE, cex = 0.6, line = 2)
+mtext(data.lab, side = 2, outer = TRUE, cex = 0.5, line =1.2)
+mtext("$  x \\sim U(0,1) $", side = 1, outer = TRUE, line = 2.2,cex=0.6)
+mtext("$y$", side = 2,las=2, outer = TRUE, line = 2.2,cex=0.6)
+mtext(parm.lab, side = 3, outer = TRUE, line = 0.5,cex=0.5)
+dev.off()
+
+
+# # mtext(main.lab, side = 3, outer = TRUE, cex = 0.6, line = 2)
+# mtext(data.lab, side = 2, outer = TRUE, cex = 0.5, line =1.2)
+# mtext("FPR", side = 1, outer = TRUE,  line =2,cex=0.6)
+# mtext("TPR", side = 2,las=2, outer = TRUE, line = 1.7,cex=0.6)
+# # mtext(parm.lab, side = 3, outer = TRUE, line = 0.5,cex=0.5)
+# dev.off()
+# 
+# mtext(main.lab, side = 3, outer = TRUE, cex = 0.6, line = 2)
+# mtext(data.lab, side = 2, outer = TRUE, cex = 0.5, line =1.2)
+# mtext("$y_b$", side = 1, outer = TRUE, line = 1.7,cex=0.6)
+# mtext("$\\hat{y_b}$", side = 2,las=2, outer = TRUE, line = 2,cex=0.6)
+# mtext(parm.lab, side = 3, outer = TRUE, line = 0.5,cex=0.5)
+# dev.off()
+
+tools::texi2pdf(pdf1)
+# tools::texi2pdf(pdf2)
+# tools::texi2pdf(pdf3)
+
+
 
 ###########################################################
 
@@ -287,4 +389,11 @@ Warning message:
                 rho=(M1-M0)*sqrt(prop[1]*prop[2])/sd(x)
                 return(rho)
               }
+              
+              
+              
+  
+              
+              
+                          
               
